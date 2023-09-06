@@ -39,6 +39,7 @@ const genKeyCmdLongDesc = `Generate JWT token to invoke the API or API Product b
 const genKeyCmdExamples = utils.ProjectName + " " + genKeyCmdLiteral + ` -n TwitterAPI -v 1.0.0 -e dev --provider admin
 NOTE: Both the flags (--name (-n) and --environment (-e)) are mandatory.
 You can override the default token endpoint using --token (-t) optional flag providing a new token endpoint`
+
 var keyGenEnv string
 var apiName string
 var apiVersion string
@@ -60,14 +61,14 @@ var genKeyCmd = &cobra.Command{
 	},
 }
 
-//Subscribe the given API or API Product to the default application and generate an access token
+// Subscribe the given API or API Product to the default application and generate an access token
 func getKeys() {
 
 	//Override the value of token endpoint if it is provided with get-keys command
 	if keyGenTokenEndpoint != "" {
 		fmt.Printf("New token endpoint '%s' is used as the token endpoint \n", keyGenTokenEndpoint)
 	} else {
-		var defaultTokenEndpoint = utils.GetTokenEndpointOfEnv(keyGenEnv,utils.MainConfigFilePath)
+		var defaultTokenEndpoint = utils.GetTokenEndpointOfEnv(keyGenEnv, utils.MainConfigFilePath)
 		fmt.Printf("'%s' is used as the token endpoint \n", defaultTokenEndpoint)
 	}
 	cred, err := getCredentials(keyGenEnv)
@@ -284,8 +285,9 @@ func callDCREndpoint(credential credentials.Credential) (string, string, error) 
 	headers[utils.HeaderAuthorization] = utils.HeaderValueAuthBasicPrefix + " " + b64encodedCredentials
 	headers[utils.HeaderContentType] = utils.HeaderValueApplicationJSON
 	//Request body for the store REST API
+	updatedUsername := strings.ReplaceAll(credential.Username, "@", "_")
 	body := dedent.Dedent(`{
-								"clientName": "rest_api_store",
+								"clientName": "rest_api_devportal_` + updatedUsername + `",
 							   	"callbackUrl": "www.google.lk",
 							   	"grantType":"password refresh_token",
 							   	"saasApp": true,
@@ -860,7 +862,7 @@ func prepScopeValues(scope []string) string {
 	return scopeParam
 }
 
-//init function to add the cli command to the root command
+// init function to add the cli command to the root command
 func init() {
 	RootCmd.AddCommand(genKeyCmd)
 	genKeyCmd.Flags().StringVarP(&keyGenEnv, "environment", "e", "", "Key generation environment")
